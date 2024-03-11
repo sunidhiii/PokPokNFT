@@ -5,24 +5,39 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require("hardhat");
+const fs = require("fs");
+const { MerkleTree } = require('merkletreejs');
+const keccak256 = require('keccak256');
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  let _baseTokenURI = "https://ipfs.io/ipfs/"
+  let name = "Pok-Pok-NFT"
+  let symbol = "PKPK"
+  let leaf = "0x676DAD03011593CCB9eD596e44E60eeDBa39E60a"
+  let merkleTree = keccak256(leaf);
+  let proof = tree.getHexProof(merkleTree);
+  console.log("proofproof",proof)
+  // const NFT = await hre.ethers.getContractFactory("pokpok");
+  // const nft = await NFT.deploy(name,symbol,_baseTokenURI);
+  // await nft.deployed();
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
+  // console.log(
+  //   `NFT contract deployment address`, nft.address
+  // );
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
 
-  await lock.waitForDeployment();
+  // const NFTdata = {
+  //   address: nft.address,
+  //   abi: JSON.parse(nft.interface.format('json'))
+  // }
 
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+  // fs.writeFileSync('./NFTdata.json', JSON.stringify(NFTdata))
+
+  // //Verify the smart contract using hardhat 
+  // await hre.run("verify:verify", {
+  //   address: "0x2Ba02737c223078B9CAC9affb76cf4F8D985faD6",
+  // });
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere

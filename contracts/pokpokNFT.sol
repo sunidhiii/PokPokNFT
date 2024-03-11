@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import "./ERC2981.sol";
+import "./Common/ERC2981.sol";
 
 contract pokpok is
     ERC721Enumerable,
@@ -18,8 +18,7 @@ contract pokpok is
     ERC2981,
     Ownable
 {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIdTracker;
+    uint256 private _tokenIdCounter;
     bytes32 public whitelistRoot;
     string private baseTokenURI;
     mapping(address => bool) private _whitelist;
@@ -79,11 +78,11 @@ contract pokpok is
     ) external virtual returns (uint256 _tokenId) {
         require(_whitelist[msg.sender], "Sender is not whitelisted");
         require(MerkleProof.verify(proof, whitelistRoot, bytes32(uint256(uint160(msg.sender)))), "Invalid proof");
-        _tokenId = _tokenIdTracker.current();
+        _tokenId = _tokenIdCounter;
         _mint(_msgSender(), _tokenId);
         _setTokenURI(_tokenId, _tokenURI);
         _setTokenRoyalty(_tokenId, _msgSender(), _royaltyFee);
-        _tokenIdTracker.increment();
+        _tokenIdCounter += 1;
         return _tokenId;
     }
 
