@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./Common/ERC2981.sol";
@@ -31,21 +30,6 @@ contract pokpok is
     ) Ownable(msg.sender) ERC721(name, symbol) {
         baseTokenURI = _baseTokenURI;
         whitelistRoot = root;
-        _tokenIdTracker.increment();
-    }
-
-    function addToWhitelist(address addr) public {
-        require(msg.sender == owner(), "Only admin can add to whitelist");
-        _whitelist[addr] = true;
-    }
-
-    function removeFromWhitelist(address addr) public {
-        require(msg.sender == owner(), "Only admin can remove from whitelist");
-        _whitelist[addr] = false;
-    }
-
-    function isWhitelisted(address addr) public view returns (bool) {
-        return _whitelist[addr];
     }
 
    function _update(address to, uint256 tokenId, address auth)
@@ -76,7 +60,6 @@ contract pokpok is
         uint96 _royaltyFee, 
         bytes32[] memory proof
     ) external virtual returns (uint256 _tokenId) {
-        require(_whitelist[msg.sender], "Sender is not whitelisted");
         require(MerkleProof.verify(proof, whitelistRoot, bytes32(uint256(uint160(msg.sender)))), "Invalid proof");
         _tokenId = _tokenIdCounter;
         _mint(_msgSender(), _tokenId);

@@ -14,9 +14,13 @@ async function main() {
   let name = "Pok-Pok-NFT"
   let symbol = "PKPK"
   let leaf = "0x676DAD03011593CCB9eD596e44E60eeDBa39E60a"
-  let merkleTree = keccak256(leaf);
-  let proof = tree.getHexProof(merkleTree);
-  console.log("proofproof",proof)
+
+  const leaves = [leaf].map(keccak256).sort(Buffer.compare)
+  const tree = new MerkleTree(leaves, keccak256, { sort: true })
+
+  const root = tree.getRoot()
+  console.log("root",root)
+
   // const NFT = await hre.ethers.getContractFactory("pokpok");
   // const nft = await NFT.deploy(name,symbol,_baseTokenURI);
   // await nft.deployed();
