@@ -1,4 +1,4 @@
-/ SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.21;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
@@ -22,6 +22,9 @@ contract pokpok is
     bytes32 public whitelistRoot1;
     bytes32 public whitelistRoot2;
     string private baseTokenURI;
+    uint256 public phase1;
+    uint256 public phase2;
+    uint256 public Duration = 30 minutes;
     
     event Claimed(address indexed claimer, uint256 indexed tokenId);
     
@@ -30,11 +33,15 @@ contract pokpok is
         string memory symbol,
         string memory _baseTokenURI,
         bytes32 root1,
-        bytes32 root2
+        bytes32 root2,
+        uint256 _phase1,
+        uint256 _phase2
     ) Ownable(msg.sender) ERC721(name, symbol) {
         baseTokenURI = _baseTokenURI;
         whitelistRoot1 = root1;
         whitelistRoot2 = root2;
+        phase1 = _phase1;
+        phase2 = _phase2;
     }
 
    function _update(address to, uint256 tokenId, address auth)
@@ -73,6 +80,10 @@ contract pokpok is
     ) external virtual returns (uint256 _tokenId) {
         require(MerkleProof.verify(proof, whitelistRoot1, bytes32(uint256(uint160(msg.sender)))) || MerkleProof.verify(proof, whitelistRoot2, bytes32(uint256(uint160(msg.sender)))), "Invalid proof");
         require(totalSupply() < MAX_SUPPLY, "All tokens have been minted");
+         require(
+        block.timestamp >= phase1 + Duration || block.timestamp >= phase2 + Duration,
+        "Minting is not allowed at this time"
+        );
         _tokenId = _tokenIdCounter;
         _mint(_msgSender(), _tokenId);
         _setTokenURI(_tokenId, _tokenURI);
