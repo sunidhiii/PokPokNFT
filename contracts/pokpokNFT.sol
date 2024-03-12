@@ -20,7 +20,6 @@ contract pokpok is
     uint256 private _tokenIdCounter;
     bytes32 public whitelistRoot;
     string private baseTokenURI;
-    mapping(address => bool) private _whitelist;
     
     constructor(
         string memory name,
