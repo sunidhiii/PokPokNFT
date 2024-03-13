@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import "./Common/ERC2981.sol";
+import "./ERC2981.sol";
 
 contract pokpok is
     ERC721Enumerable,
@@ -34,8 +34,8 @@ contract pokpok is
         string memory _baseTokenURI,
         bytes32 root1,
         bytes32 root2,
-        uint256 _phase1, //2.00 - 2.30
-        uint256 _phase2  //2.30 - 3.00
+        uint256 _phase1, 
+        uint256 _phase2 
     ) Ownable(msg.sender) ERC721(name, symbol) {
         baseTokenURI = _baseTokenURI;
         whitelistRoot1 = root1;
@@ -77,8 +77,12 @@ contract pokpok is
         string memory _tokenURI,
         bytes32[] memory proof
     ) external virtual returns (uint256 _tokenId) {
-        require(MerkleProof.verify(proof, whitelistRoot1, bytes32(uint256(uint160(msg.sender)))) &&  block.timestamp >= phase1 + Duration , "Invalid proof or Phase1 Expired");
-        require(MerkleProof.verify(proof, whitelistRoot2, bytes32(uint256(uint160(msg.sender)))) &&  block.timestamp >= phase2 + Duration , "Invalid proof or Phase1 Expired");
+        require(block.timestamp >= phase1 , "Minting started");
+        block.timestamp > phase1 && block.timestamp <= phase1 + Duration 
+        ?require(MerkleProof.verify(proof, whitelistRoot1, bytes32(uint256(uint160(msg.sender)))) , "Invalid proof or Phase1 Expired")
+        :block.timestamp > phase1 + Duration && block.timestamp <= phase1 + Duration*2 
+        ?require(MerkleProof.verify(proof, whitelistRoot2, bytes32(uint256(uint160(msg.sender)))), "Invalid proof or Phase2 Expired") 
+        :require(MerkleProof.verify(proof, whitelistRoot2, bytes32(uint256(uint160(msg.sender)))), "Invalid proof") ;        
         require(totalSupply() < MAX_SUPPLY, "All tokens have been minted");
         _tokenId = _tokenIdCounter;
         _mint(_msgSender(), _tokenId);
