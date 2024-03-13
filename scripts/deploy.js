@@ -18,7 +18,7 @@ async function main() {
   const leaves = [leaf].map(keccak256).sort(Buffer.compare)
   const tree = new MerkleTree(leaves, keccak256, { sort: true })
 
-  const root = tree.getRoot()
+  const root = tree.getRoot().toString('hex')
   console.log("root",root)
 
   // const NFT = await hre.ethers.getContractFactory("pokpok");
