@@ -23,7 +23,6 @@ contract pokpok is
     bytes32 public whitelistRoot2;
     string private baseTokenURI;
     uint256 public phase1;
-    uint256 public phase2;
     uint256 public Duration = 30 minutes;
     
     event Claimed(address indexed claimer, uint256 indexed tokenId);
@@ -35,13 +34,11 @@ contract pokpok is
         bytes32 root1,
         bytes32 root2,
         uint256 _phase1, 
-        uint256 _phase2 
     ) Ownable(msg.sender) ERC721(name, symbol) {
         baseTokenURI = _baseTokenURI;
         whitelistRoot1 = root1;
         whitelistRoot2 = root2;
         phase1 = _phase1;
-        phase2 = _phase2;
     }
 
    function _update(address to, uint256 tokenId, address auth)
@@ -77,7 +74,7 @@ contract pokpok is
         string memory _tokenURI,
         bytes32[] memory proof
     ) external virtual returns (uint256 _tokenId) {
-        require(block.timestamp >= phase1 , "Minting started");
+        require(block.timestamp >= phase1 , "Invalid Pre-Sale time");
         block.timestamp > phase1 && block.timestamp <= phase1 + Duration 
         ?require(MerkleProof.verify(proof, whitelistRoot1, bytes32(uint256(uint160(msg.sender)))) , "Invalid proof or Phase1 Expired")
         :block.timestamp > phase1 + Duration && block.timestamp <= phase1 + Duration*2 
