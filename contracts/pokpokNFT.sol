@@ -34,8 +34,8 @@ contract pokpok is
         string memory _baseTokenURI,
         bytes32 root1,
         bytes32 root2,
-        uint256 _phase1,
-        uint256 _phase2
+        uint256 _phase1, //2.00 - 2.30
+        uint256 _phase2  //2.30 - 3.00
     ) Ownable(msg.sender) ERC721(name, symbol) {
         baseTokenURI = _baseTokenURI;
         whitelistRoot1 = root1;
@@ -75,22 +75,18 @@ contract pokpok is
 
     function mint(
         string memory _tokenURI,
-        uint96 _royaltyFee, 
         bytes32[] memory proof
     ) external virtual returns (uint256 _tokenId) {
-        require(MerkleProof.verify(proof, whitelistRoot1, bytes32(uint256(uint160(msg.sender)))) || MerkleProof.verify(proof, whitelistRoot2, bytes32(uint256(uint160(msg.sender)))), "Invalid proof");
+        require(MerkleProof.verify(proof, whitelistRoot1, bytes32(uint256(uint160(msg.sender)))) &&  block.timestamp >= phase1 + Duration , "Invalid proof or Phase1 Expired");
+        require(MerkleProof.verify(proof, whitelistRoot2, bytes32(uint256(uint160(msg.sender)))) &&  block.timestamp >= phase2 + Duration , "Invalid proof or Phase1 Expired");
         require(totalSupply() < MAX_SUPPLY, "All tokens have been minted");
-         require(
-        block.timestamp >= phase1 + Duration || block.timestamp >= phase2 + Duration,
-        "Minting is not allowed at this time"
-        );
         _tokenId = _tokenIdCounter;
         _mint(_msgSender(), _tokenId);
         _setTokenURI(_tokenId, _tokenURI);
-        _setTokenRoyalty(_tokenId, _msgSender(), _royaltyFee);
+        _setTokenRoyalty(_tokenId, _msgSender(), 50);
         _tokenIdCounter += 1;
-        return _tokenId;
         emit Claimed(_msgSender(), _tokenId);
+        return _tokenId;
     }
 
     function tokenURI(uint256 tokenId)
