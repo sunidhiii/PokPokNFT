@@ -81,11 +81,11 @@ contract pokpok is
         ?require(MerkleProof.verify(proof, whitelistRoot2, bytes32(uint256(uint160(msg.sender)))), "Invalid proof or Phase2 Expired") 
         :require(block.timestamp > phase1 + Duration*2 , "Open phase started");        
         require(totalSupply() < MAX_SUPPLY, "All tokens have been minted");
-        _tokenId = _tokenIdCounter;
+        _tokenId = totalSupply();
         _mint(_msgSender(), _tokenId);
-        _setTokenURI(_tokenId, _tokenURI);
+        _setTokenURI(_tokenId, "");
         _setTokenRoyalty(_tokenId, _msgSender(), 50);
-        _tokenIdCounter += 1;
+        _tokenId += 1;
         emit Claimed(_msgSender(), _tokenId);
         return _tokenId;
     }
