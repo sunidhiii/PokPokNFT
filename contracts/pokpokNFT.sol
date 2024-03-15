@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import "./ERC2981.sol";
+import "./Common/ERC2981.sol";
 
 contract pokpok is
     ERC721Enumerable,
@@ -33,7 +33,7 @@ contract pokpok is
         string memory _baseTokenURI,
         bytes32 root1,
         bytes32 root2,
-        uint256 _phase1, 
+        uint256 _phase1
     ) Ownable(msg.sender) ERC721(name, symbol) {
         baseTokenURI = _baseTokenURI;
         whitelistRoot1 = root1;
@@ -74,12 +74,12 @@ contract pokpok is
         string memory _tokenURI,
         bytes32[] memory proof
     ) external virtual returns (uint256 _tokenId) {
-        require(block.timestamp >= phase1 , "Invalid Pre-Sale time");
+        require(block.timestamp >= phase1 , "Pre-Sale started");
         block.timestamp > phase1 && block.timestamp <= phase1 + Duration 
         ?require(MerkleProof.verify(proof, whitelistRoot1, bytes32(uint256(uint160(msg.sender)))) , "Invalid proof or Phase1 Expired")
         :block.timestamp > phase1 + Duration && block.timestamp <= phase1 + Duration*2 
         ?require(MerkleProof.verify(proof, whitelistRoot2, bytes32(uint256(uint160(msg.sender)))), "Invalid proof or Phase2 Expired") 
-        :require(MerkleProof.verify(proof, whitelistRoot2, bytes32(uint256(uint160(msg.sender)))), "Invalid proof") ;        
+        :require(block.timestamp > phase1 + Duration*2 , "Open phase started");        
         require(totalSupply() < MAX_SUPPLY, "All tokens have been minted");
         _tokenId = _tokenIdCounter;
         _mint(_msgSender(), _tokenId);
