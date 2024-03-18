@@ -23,7 +23,7 @@ contract pokpok is
     string private baseTokenURI;
     uint256 public phase1;
     uint256 public Duration = 30 minutes;
-    uint16 rotaltyPercentage = 50;
+    uint96 public rotaltyPercentage = 50;
     
     event Claimed(address indexed claimer, uint256 indexed tokenId);
     
