@@ -1,28 +1,22 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 
-module.exports = {
-  solidity: {
-    settings: { optimizer: { enabled: true, runs: 200 } },
-    compilers: [
-      {
-        version: "0.8.21",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 1000000,
-          },
-        },
-      },
-    ],
-  },
-  defaultNetwork: "goerli",
-  networks: {
-    hardhat: {},
-    goerli: {
-      url: `https://eth-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [process.env.PRIVATE_KEY],
-    },
-  },
+const { DEPLOYER_PRIVATE_KEY, TEST_USER_PRIVATE_KEY,  ALCHEMY_API_KEY} = process.env;
 
+/** @type import('hardhat/config').HardhatUserConfig */
+module.exports = {
+  solidity: "0.8.21",
+
+  networks: {
+    base_sepolia: {
+      url: ALCHEMY_API_KEY,
+      accounts: [DEPLOYER_PRIVATE_KEY]
+    }
+    
+  },
+  etherscan: {
+    apiKey: {
+      base_sepolia: "G1KJFNVIRT835I8YU43HXSBWNBA4H7Z6KJ",
+    }
+  },
 };

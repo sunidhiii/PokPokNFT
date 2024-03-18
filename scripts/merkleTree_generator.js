@@ -1,26 +1,20 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
-const hre = require("hardhat");
-const fs = require("fs");
 const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
+const hre = require("hardhat");
 
 async function main() {
-  let leaf = ["0x676DAD03011593CCB9eD596e44E60eeDBa39E60a","0xAcA0F2947e01139C7dfDBa7939ec3D85ce9accCe","0xc225Dd56D374e44A65B0ad41933D9d6E3e09b77d"];
-  console.log(leaf)
+  let addresses = ["0xA56eA15Ce3527e2eCA8CF3ea0253e8f4faAadDB9","0xAcA0F2947e01139C7dfDBa7939ec3D85ce9accCe","0xc225Dd56D374e44A65B0ad41933D9d6E3e09b77d","0x3aea99107030F24DfE7E298AaA3641646a80D2E8","0x227e73D5c6e5461485869D86Df2a39FaebBfEC4c","0xB68595Fce550B03b1A053FFDbdfD5A446823af37"];
+  // Hash addresses to get the leaves
+  let leaves = addresses.map((addr) => keccak256(addr));
+  // Create tree
+  let merkleTree = new MerkleTree(leaves, keccak256, { sortPairs: true });
+  // Get root
+  let rootHash = merkleTree.getRoot().toString("hex");
 
-  const leaves = [leaf].map(keccak256).sort(Buffer.compare);
-  console.log(leaves)
-  const tree = new MerkleTree(leaves, keccak256, { sort: true });
-
-  const root = tree.getRoot().toString("hex");
-  console.log("root", root);
+  // Pretty-print tree
+  console.log(`rootHash`,rootHash);
 }
 main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
+    console.error(error);
+    process.exitCode = 1;
 });

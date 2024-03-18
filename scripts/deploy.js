@@ -6,40 +6,32 @@
 // global scope, and execute the script.
 const hre = require("hardhat");
 const fs = require("fs");
-const { MerkleTree } = require('merkletreejs');
-const keccak256 = require('keccak256');
 
 async function main() {
-  let _baseTokenURI = "https://ipfs.io/ipfs/"
-  let name = "Pok-Pok-NFT"
-  let symbol = "PKPK"
-  let leaf = "0x676DAD03011593CCB9eD596e44E60eeDBa39E60a"
-
-  const leaves = [leaf].map(keccak256).sort(Buffer.compare)
-  const tree = new MerkleTree(leaves, keccak256, { sort: true })
-
-  const root = tree.getRoot().toString('hex')
-  console.log("root",root)
-
-  // const NFT = await hre.ethers.getContractFactory("pokpok");
-  // const nft = await NFT.deploy(name,symbol,_baseTokenURI);
-  // await nft.deployed();
+  let name = 'PokPok'
+  let symbol = 'PkPknft'
+  let hash = '0x3983846329ee5530fa629605af38fc55be04a87a25e078d01bdecce9296118a7'
+  let BaseURI = 'https://ipfs.io/ipfs/QmQwa9yTQRCJ3TsU2qkZywwphAhDXWsaWN2j53daLs3S3p/'
+  // const Contract = await hre.ethers.getContractFactory("pokpok");
+  // const contract = await Contract.deploy(name,symbol,BaseURI,hash,hash,1710763988);
+  // await contract.deployed();
 
   // console.log(
-  //   `NFT contract deployment address`, nft.address
+  //   `contract deployment address`, contract.address
   // );
 
 
-  // const NFTdata = {
-  //   address: nft.address,
-  //   abi: JSON.parse(nft.interface.format('json'))
+  // const Contractdata = {
+  //   address: contract.address,
+  //   abi: JSON.parse(contract.interface.format('json'))
   // }
 
-  // fs.writeFileSync('./NFTdata.json', JSON.stringify(NFTdata))
+  // fs.writeFileSync('./contract.json', JSON.stringify(Contractdata))
 
-  // //Verify the smart contract using hardhat 
+  //Verify the smart contract using hardhat 
   // await hre.run("verify:verify", {
-  //   address: "0x2Ba02737c223078B9CAC9affb76cf4F8D985faD6",
+  //   address: '0x0ddd3a1547967d459029DaA565CA96E60f1Cf5B0',
+  //   constructorArguments: [name,symbol,BaseURI,hash,hash,1710763988]
   // });
 
 }

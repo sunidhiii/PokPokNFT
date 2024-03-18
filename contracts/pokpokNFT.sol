@@ -74,9 +74,22 @@ contract pokpok is
         baseTokenURI = _baseTokenURI;
     }
 
+    function checkValidityPhaseone(bytes32[] calldata _merkleProof) public view returns (bool){
+        bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+        require(MerkleProof.verify(_merkleProof, whitelistRoot1, leaf), "Incorrect proof");
+        return true; 
+    }
+
+    function checkValidityPhasetwo(bytes32[] calldata _merkleProof) public view returns (bool){
+        bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+        require(MerkleProof.verify(_merkleProof, whitelistRoot2, leaf), "Incorrect proof");
+        return true; 
+    }
+
     function mint(
         bytes32[] memory proof
-    ) external virtual returns (uint256 _tokenId) {
+    ) external virtual returns (uint256) {
+        require(claimedTokens[msg.sender] == false, "Address has already claimed a token");
         require(block.timestamp >= phase1 , "Pre-Sale started");
         block.timestamp > phase1 && block.timestamp <= phase1 + Duration 
         ?require(MerkleProof.verify(proof, whitelistRoot1, bytes32(uint256(uint160(msg.sender)))) , "Invalid proof or Phase1 Expired")
@@ -84,10 +97,12 @@ contract pokpok is
         ?require(MerkleProof.verify(proof, whitelistRoot2, bytes32(uint256(uint160(msg.sender)))), "Invalid proof or Phase2 Expired") 
         :require(block.timestamp > phase1 + Duration*2 , "Open phase started");        
         require(totalSupply() < MAX_SUPPLY, "All tokens have been minted");
-        _mint(_msgSender(),  totalSupply());
-        _setTokenRoyalty(totalSupply(), _msgSender(), rotaltyPercentage);
-        emit Claimed(_msgSender(), totalSupply());
-        return  totalSupply();
+        uint256 _tokenId = totalSupply();
+        _mint(_msgSender(),  _tokenId);
+        _setTokenRoyalty(_tokenId, _msgSender(), rotaltyPercentage);
+        claimedTokens[msg.sender] = true;
+        emit Claimed(_msgSender(), _tokenId);
+        return  _tokenId;
     }
 
     function tokenURI(uint256 tokenId)
