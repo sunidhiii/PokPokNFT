@@ -23,6 +23,7 @@ contract pokpok is
     string private baseTokenURI;
     uint256 public phase1;
     uint256 public Duration = 30 minutes;
+    uint16 rotaltyPercentage = 50;
     
     event Claimed(address indexed claimer, uint256 indexed tokenId);
     
@@ -60,6 +61,10 @@ contract pokpok is
         return _baseURI();
     }
     
+    function setRotaltyPercentage(uint16 newRoyaltyPercent) external onlyOwner {
+        rotaltyPercentage = newRoyaltyPercent;
+    }
+
     function setWhitelistRoot(bytes32 root1,bytes32 root2) external onlyOwner {
         whitelistRoot1 = root1;
         whitelistRoot2 = root2;
@@ -80,8 +85,7 @@ contract pokpok is
         :require(block.timestamp > phase1 + Duration*2 , "Open phase started");        
         require(totalSupply() < MAX_SUPPLY, "All tokens have been minted");
         _mint(_msgSender(),  totalSupply());
-        _setTokenURI(_tokenId, "");
-        _setTokenRoyalty(_tokenId, _msgSender(), 50);
+        _setTokenRoyalty(totalSupply(), _msgSender(), rotaltyPercentage);
         emit Claimed(_msgSender(), totalSupply());
         return  totalSupply();
     }
