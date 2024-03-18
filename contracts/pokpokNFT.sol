@@ -61,7 +61,7 @@ contract pokpok is
         return _baseURI();
     }
     
-    function setRotaltyPercentage(uint16 newRoyaltyPercent) external onlyOwner {
+    function setRotaltyPercentage(uint96 newRoyaltyPercent) external onlyOwner {
         rotaltyPercentage = newRoyaltyPercent;
     }
 
