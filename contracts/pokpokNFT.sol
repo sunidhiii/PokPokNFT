@@ -22,12 +22,12 @@ contract pokpok is
     bytes32 public whitelistRoot2;
     string private baseTokenURI;
     uint256 public phase1;
-    uint256 public Duration = 30 minutes;
+    uint256 public Duration = 5 minutes;
     uint96 public rotaltyPercentage = 50;
     mapping(address => bool) public claimedTokens;
-    
+
     event Claimed(address indexed claimer, uint256 indexed tokenId);
-    
+
     constructor(
         string memory name,
         string memory symbol,
@@ -42,31 +42,39 @@ contract pokpok is
         phase1 = _phase1;
     }
 
-   function _update(address to, uint256 tokenId, address auth)
+    function _update(
+        address to,
+        uint256 tokenId,
+        address auth
+    )
         internal
         override(ERC721, ERC721Enumerable, ERC721Pausable)
         returns (address)
     {
         return super._update(to, tokenId, auth);
     }
- 
-    function _increaseBalance(address account, uint128 value)
-        internal
-        override(ERC721, ERC721Enumerable)
-    {
+
+    function _increaseBalance(
+        address account,
+        uint128 value
+    ) internal override(ERC721, ERC721Enumerable) {
         super._increaseBalance(account, value);
     }
-
 
     function baseURI() external view returns (string memory) {
         return _baseURI();
     }
-    
+
+    function updatePhase1(uint256 newPhase1) external onlyOwner {
+        require(block.timestamp > newPhase1, "New phase1 timestamp should be in the future");
+        phase1 = newPhase1;
+    }
+
     function setRotaltyPercentage(uint96 newRoyaltyPercent) external onlyOwner {
         rotaltyPercentage = newRoyaltyPercent;
     }
 
-    function setWhitelistRoot(bytes32 root1,bytes32 root2) external onlyOwner {
+    function setWhitelistRoot(bytes32 root1, bytes32 root2) external onlyOwner {
         whitelistRoot1 = root1;
         whitelistRoot2 = root2;
     }
@@ -75,43 +83,49 @@ contract pokpok is
         baseTokenURI = _baseTokenURI;
     }
 
-    function checkValidityPhaseone(bytes32[] calldata _merkleProof) public view returns (bool){
-        bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
-        require(MerkleProof.verify(_merkleProof, whitelistRoot1, leaf), "Incorrect proof");
-        return true; 
+   function isValidphase1(bytes32[] memory proof, bytes32 leaf) public view returns (bool) {
+        return MerkleProof.verify(proof, whitelistRoot1, leaf);
+    }
+    function isValidphase2(bytes32[] memory proof, bytes32 leaf) public view returns (bool) {
+        return MerkleProof.verify(proof, whitelistRoot2, leaf);
     }
 
-    function checkValidityPhasetwo(bytes32[] calldata _merkleProof) public view returns (bool){
-        bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
-        require(MerkleProof.verify(_merkleProof, whitelistRoot2, leaf), "Incorrect proof");
-        return true; 
-    }
-
-    function mint(
-        bytes32[] memory proof
-    ) external virtual returns (uint256) {
-        require(claimedTokens[msg.sender] == false, "Address has already claimed a token");
-        require(block.timestamp >= phase1 , "Pre-Sale started");
-        block.timestamp > phase1 && block.timestamp <= phase1 + Duration 
-        ?require(MerkleProof.verify(proof, whitelistRoot1, bytes32(uint256(uint160(msg.sender)))) , "Invalid proof or Phase1 Expired")
-        :block.timestamp > phase1 + Duration && block.timestamp <= phase1 + Duration*2 
-        ?require(MerkleProof.verify(proof, whitelistRoot2, bytes32(uint256(uint160(msg.sender)))), "Invalid proof or Phase2 Expired") 
-        :require(block.timestamp > phase1 + Duration*2 , "Open phase started");        
+    function mint(bytes32[] calldata proof ,bytes32 leaf ) external virtual returns (uint256) {
+        require(
+            claimedTokens[msg.sender] == false,
+            "Address has already claimed a token"
+        );
+        require(block.timestamp >= phase1, "Pre-Sale started");
+        if (block.timestamp > phase1 && block.timestamp <= phase1 + Duration) {
+            require(
+                MerkleProof.verify(proof, whitelistRoot1, leaf),
+                "Invalid proof or Phase1 expired");
+        } else if (
+            block.timestamp > phase1 + Duration &&
+            block.timestamp <= phase1 + Duration * 2
+        ) {
+            require(
+               MerkleProof.verify(proof, whitelistRoot2, leaf),
+                "Invalid proof or Phase2 expired"
+            );
+        } else {
+            require(
+                block.timestamp > phase1 + Duration * 2,
+                "Open phase has started"
+            );
+        }
         require(totalSupply() < MAX_SUPPLY, "All tokens have been minted");
         uint256 _tokenId = totalSupply();
-        _mint(_msgSender(),  _tokenId);
+        _mint(_msgSender(), _tokenId);
         _setTokenRoyalty(_tokenId, _msgSender(), rotaltyPercentage);
         claimedTokens[msg.sender] = true;
         emit Claimed(_msgSender(), _tokenId);
-        return  _tokenId;
+        return _tokenId;
     }
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
 
@@ -122,10 +136,12 @@ contract pokpok is
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
+    function supportsInterface(
+        bytes4 interfaceId
+    )
         public
         view
-        override(ERC721, ERC721Enumerable, ERC721URIStorage , ERC2981)
+        override(ERC721, ERC721Enumerable, ERC721URIStorage, ERC2981)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
