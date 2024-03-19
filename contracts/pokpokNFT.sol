@@ -24,6 +24,7 @@ contract pokpok is
     uint256 public phase1;
     uint256 public Duration = 30 minutes;
     uint96 public rotaltyPercentage = 50;
+    mapping(address => bool) public claimedTokens;
     
     event Claimed(address indexed claimer, uint256 indexed tokenId);
     
