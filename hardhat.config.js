@@ -8,15 +8,25 @@ module.exports = {
   solidity: "0.8.21",
 
   networks: {
-    base_sepolia: {
+    sepolia: {
       url: ALCHEMY_API_KEY,
       accounts: [DEPLOYER_PRIVATE_KEY]
     }
     
   },
   etherscan: {
-    apiKey: {
-      base_sepolia: "G1KJFNVIRT835I8YU43HXSBWNBA4H7Z6KJ",
-    }
+    // apiKey: {
+    //   base: "XW8FARI4JVCRE6MIFDJNCK66H8P4N75A8G",
+    // },
+    customChains: [
+      {
+        network: "base",
+        chainId: 84532,
+        urls: {
+          apiURL: ALCHEMY_API_KEY,
+          browserURL: "https://sepolia-explorer.base.org"
+        }
+      }
+    ]
   },
 };

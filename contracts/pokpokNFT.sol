@@ -22,7 +22,7 @@ contract pokpok is
     bytes32 public whitelistRoot2;
     string private baseTokenURI;
     uint256 public phase1;
-    uint256 public Duration = 5 minutes;
+    uint256 public Duration = 30 minutes;
     uint96 public rotaltyPercentage = 50;
     mapping(address => bool) public claimedTokens;
 
