@@ -83,14 +83,8 @@ contract pokpok is
         baseTokenURI = _baseTokenURI;
     }
 
-   function isValidphase1(bytes32[] memory proof, bytes32 leaf) public view returns (bool) {
-        return MerkleProof.verify(proof, whitelistRoot1, leaf);
-    }
-    function isValidphase2(bytes32[] memory proof, bytes32 leaf) public view returns (bool) {
-        return MerkleProof.verify(proof, whitelistRoot2, leaf);
-    }
-
-    function mint(bytes32[] calldata proof ,bytes32 leaf ) external virtual returns (uint256) {
+    function mint(bytes32[] calldata proof) external virtual returns (uint256) {
+        bytes32 leaf =  keccak256(abi.encodePacked(msg.sender));
         require(
             claimedTokens[msg.sender] == false,
             "Address has already claimed a token"
