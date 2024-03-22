@@ -3,16 +3,25 @@ const keccak256 = require("keccak256");
 const hre = require("hardhat");
 
 async function main() {
-  let addresses = ["0xA56eA15Ce3527e2eCA8CF3ea0253e8f4faAadDB9","0xAcA0F2947e01139C7dfDBa7939ec3D85ce9accCe","0xc225Dd56D374e44A65B0ad41933D9d6E3e09b77d","0x3aea99107030F24DfE7E298AaA3641646a80D2E8","0x227e73D5c6e5461485869D86Df2a39FaebBfEC4c","0xB68595Fce550B03b1A053FFDbdfD5A446823af37"];
-  // Hash addresses to get the leaves
-  let leaves = addresses.map((addr) => keccak256(addr));
-  // Create tree
-  let merkleTree = new MerkleTree(leaves, keccak256, { sortPairs: true });
-  // Get root
-  let rootHash = merkleTree.getRoot().toString("hex");
+  
+  // let addresses = ["0xc225Dd56D374e44A65B0ad41933D9d6E3e09b77d","0x3aea99107030F24DfE7E298AaA3641646a80D2E8","0x227e73D5c6e5461485869D86Df2a39FaebBfEC4c","0xB68595Fce550B03b1A053FFDbdfD5A446823af37"]
+  let addresses = ["0x5c255d4eCe9bF502DAe41310407789ceA8aEF58a","0x48C748BC5bcc05CED769706cD62f7FBB61fb9Ae3","0x4aa12478e94909BE9b4C4c39e942DFB3AB505B95","0xF88F6ee1bF60Ca54E3eAA9076E1ffe130B832dC7"]
 
-  // Pretty-print tree
-  console.log(`rootHash`,rootHash);
+
+  const buf2hex = (x) => "0x" + x.toString("hex");
+  const leaves = addresses.map((x) => keccak256(x));
+  const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
+  const root = "0x" + tree.getRoot().toString("hex");
+  const leaf = keccak256(addresses[1]).toString("hex");
+  const proof = tree.getProof(leaf).map((x) => buf2hex(x.data));
+  console.log(`Root - ${root}`);
+  console.log(`leaf - ${leaf}`);
+  console.log(`proof - ${proof}`);
+
+
+  
+
+ 
 }
 main().catch((error) => {
     console.error(error);
