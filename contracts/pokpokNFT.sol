@@ -53,7 +53,7 @@ contract PokPokNFT is
     }
 
     function premint(address to) external onlyOwner returns (uint256)  {
-        require(totalSupply() >= 88, "premint limit reached");    
+        require(totalSupply() <= 88, "premint limit reached");    
         uint256 _tokenId = totalSupply();
         _mint(to, _tokenId);
         _setTokenRoyalty(_tokenId, to, rotaltyPercentage);   
