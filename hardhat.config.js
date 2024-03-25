@@ -15,9 +15,9 @@ module.exports = {
     
   },
   etherscan: {
-    // apiKey: {
-    //   base: "XW8FARI4JVCRE6MIFDJNCK66H8P4N75A8G",
-    // },
+    apiKey: {
+      base: "XW8FARI4JVCRE6MIFDJNCK66H8P4N75A8G",
+    },
     customChains: [
       {
         network: "base",

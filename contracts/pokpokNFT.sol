@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import "./Common/ERC2981.sol";
+import "./ERC2981.sol";
 
 contract PokPokNFT is
     ERC721Enumerable,
@@ -52,7 +52,16 @@ contract PokPokNFT is
         return super.tokenURI(tokenId);
     }
 
-    function mint(bytes32[] calldata proof) external virtual returns (uint256) {        
+    function premint(address to) external onlyOwner returns (uint256)  {
+        require(totalSupply() >= 88, "premint limit reached");    
+        uint256 _tokenId = totalSupply();
+        _mint(to, _tokenId);
+        _setTokenRoyalty(_tokenId, to, rotaltyPercentage);   
+        return _tokenId;
+    }
+
+    function mint(bytes32[] calldata proof) external virtual returns (uint256) { 
+        require(totalSupply() >= 88, "Invalid totalsupply");       
         require(
             alreadyClaimed[msg.sender] == false,
             "User has already claimed a token"
