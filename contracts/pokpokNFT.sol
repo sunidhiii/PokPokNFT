@@ -17,14 +17,16 @@ contract PokPokNFT is
     ERC2981,
     Ownable
 {
+    enum Phase { Phase1, Phase2, Open }
+
     uint256 public MAX_SUPPLY = 888;
     bytes32 public whitelistRootPhase1;
     bytes32 public whitelistRootPhase2;
-    string private baseTokenURI;
+    string private baseTokenURI;                                    // https://firebasestorage.googleapis.com/v0/b/pokpok-adb67.appspot.com/o/metadata%2F
     uint256 public phase1TimeStamp;
     uint256 public phaseDuration = 30 minutes;
-    uint96 public rotaltyPercentage = 50;
-    mapping(address => bool) public alreadyClaimed;
+    uint96 public rotaltyPercentage = 500;
+    mapping(address => mapping(Phase => bool)) public alreadyClaimed;
 
     event Claimed(address indexed claimer, uint256 indexed tokenId);
 
@@ -52,43 +54,49 @@ contract PokPokNFT is
         return super.tokenURI(tokenId);
     }
 
-    function premint(address to) external onlyOwner returns (uint256)  {
-        require(totalSupply() <= 88, "premint limit reached");    
-        uint256 _tokenId = totalSupply();
-        _mint(to, _tokenId);
-        _setTokenRoyalty(_tokenId, to, rotaltyPercentage);   
-        return _tokenId;
+    function premint(address _to, uint _amount) external onlyOwner {
+        require(_amount + totalSupply() <= 88, "Premint limit reached");    
+        for(uint i = 0; i < _amount; i++) {
+            uint256 _tokenId = totalSupply();
+            _mint(_to, _tokenId);
+            _setTokenRoyalty(_tokenId, _to, rotaltyPercentage);   
+        }
     }
 
-    function mint(bytes32[] calldata proof) external virtual returns (uint256) { 
-        require(totalSupply() >= 88, "Invalid totalsupply");       
-        require(
-            alreadyClaimed[msg.sender] == false,
-            "User has already claimed a token"
-        );
+    function mint(bytes32[] calldata proof) external whenNotPaused returns (uint256) { 
 
         require(block.timestamp >= phase1TimeStamp, "Pre-Sale not started");
         bytes32 leaf =  keccak256(abi.encodePacked(msg.sender));
+
+        Phase currentPhase = Phase.Open;
         
         if (block.timestamp > phase1TimeStamp && block.timestamp <= phase1TimeStamp + phaseDuration) {
+            currentPhase = Phase.Phase1;
             require(
                 MerkleProof.verify(proof, whitelistRootPhase1, leaf),
-                "Invalid proof or Phase1 expired");
+                "Invalid proof or Phase1 expired"
+            );
         } 
         if (
             block.timestamp > phase1TimeStamp + phaseDuration &&
             block.timestamp <= phase1TimeStamp + phaseDuration * 2
         ) {
+            currentPhase = Phase.Phase2;
             require(
                MerkleProof.verify(proof, whitelistRootPhase2, leaf),
                 "Invalid proof or Phase2 expired"
             );
         } 
 
+        require(
+            !alreadyClaimed[msg.sender][currentPhase],
+            "User has already claimed a token"
+        );
+
         uint256 _tokenId = totalSupply();
         require(_tokenId < MAX_SUPPLY, "All tokens have been minted");
 
-        alreadyClaimed[msg.sender] = true;
+        alreadyClaimed[msg.sender][currentPhase] = true;
         
         _mint(msg.sender, _tokenId);
         _setTokenRoyalty(_tokenId, msg.sender, rotaltyPercentage);
@@ -98,7 +106,7 @@ contract PokPokNFT is
     }
 
     function updatePhase1(uint256 _newPhase1TimeStamp) external onlyOwner {
-        require(block.timestamp > _newPhase1TimeStamp, "New phase1 timestamp should be in the future");
+        require(_newPhase1TimeStamp > block.timestamp, "New phase1 timestamp should be in the future");
         phase1TimeStamp = _newPhase1TimeStamp;
     }
 
@@ -117,6 +125,20 @@ contract PokPokNFT is
 
     function setBaseURI(string memory _baseTokenURI) external onlyOwner {
         baseTokenURI = _baseTokenURI;
+    }
+
+    /**
+     * @dev To pause the mint
+     */
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @dev To unpause the mint
+     */
+    function unpause() external onlyOwner {
+        _unpause();
     }
 
     function _baseURI() internal view override returns (string memory) {
