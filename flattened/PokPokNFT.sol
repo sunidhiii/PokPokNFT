@@ -1,5 +1,91 @@
 // SPDX-License-Identifier: MIT
 
+// File: @openzeppelin/contracts/utils/ReentrancyGuard.sol
+
+// OpenZeppelin Contracts (last updated v5.0.0) (utils/ReentrancyGuard.sol)
+
+pragma solidity ^0.8.20;
+
+/**
+ * @dev Contract module that helps prevent reentrant calls to a function.
+ *
+ * Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier
+ * available, which can be applied to functions to make sure there are no nested
+ * (reentrant) calls to them.
+ *
+ * Note that because there is a single `nonReentrant` guard, functions marked as
+ * `nonReentrant` may not call one another. This can be worked around by making
+ * those functions `private`, and then adding `external` `nonReentrant` entry
+ * points to them.
+ *
+ * TIP: If you would like to learn more about reentrancy and alternative ways
+ * to protect against it, check out our blog post
+ * https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].
+ */
+abstract contract ReentrancyGuard {
+    // Booleans are more expensive than uint256 or any type that takes up a full
+    // word because each write operation emits an extra SLOAD to first read the
+    // slot's contents, replace the bits taken up by the boolean, and then write
+    // back. This is the compiler's defense against contract upgrades and
+    // pointer aliasing, and it cannot be disabled.
+
+    // The values being non-zero value makes deployment a bit more expensive,
+    // but in exchange the refund on every call to nonReentrant will be lower in
+    // amount. Since refunds are capped to a percentage of the total
+    // transaction's gas, it is best to keep them low in cases like this one, to
+    // increase the likelihood of the full refund coming into effect.
+    uint256 private constant NOT_ENTERED = 1;
+    uint256 private constant ENTERED = 2;
+
+    uint256 private _status;
+
+    /**
+     * @dev Unauthorized reentrant call.
+     */
+    error ReentrancyGuardReentrantCall();
+
+    constructor() {
+        _status = NOT_ENTERED;
+    }
+
+    /**
+     * @dev Prevents a contract from calling itself, directly or indirectly.
+     * Calling a `nonReentrant` function from another `nonReentrant`
+     * function is not supported. It is possible to prevent this from happening
+     * by making the `nonReentrant` function external, and making it call a
+     * `private` function that does the actual work.
+     */
+    modifier nonReentrant() {
+        _nonReentrantBefore();
+        _;
+        _nonReentrantAfter();
+    }
+
+    function _nonReentrantBefore() private {
+        // On the first call to nonReentrant, _status will be NOT_ENTERED
+        if (_status == ENTERED) {
+            revert ReentrancyGuardReentrantCall();
+        }
+
+        // Any calls to nonReentrant after this point will fail
+        _status = ENTERED;
+    }
+
+    function _nonReentrantAfter() private {
+        // By storing the original value once again, a refund is triggered (see
+        // https://eips.ethereum.org/EIPS/eip-2200)
+        _status = NOT_ENTERED;
+    }
+
+    /**
+     * @dev Returns true if the reentrancy guard is currently set to "entered", which indicates there is a
+     * `nonReentrant` function in the call stack.
+     */
+    function _reentrancyGuardEntered() internal view returns (bool) {
+        return _status == ENTERED;
+    }
+}
+
 // File: @openzeppelin/contracts/utils/cryptography/MerkleProof.sol
 
 // OpenZeppelin Contracts (last updated v5.0.0) (utils/cryptography/MerkleProof.sol)
@@ -400,7 +486,6 @@ interface IERC1155Errors {
 
 // File: @openzeppelin/contracts/utils/math/SignedMath.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (utils/math/SignedMath.sol)
 
 pragma solidity ^0.8.20;
@@ -445,7 +530,6 @@ library SignedMath {
 }
 
 // File: @openzeppelin/contracts/utils/math/Math.sol
-
 
 // OpenZeppelin Contracts (last updated v5.0.0) (utils/math/Math.sol)
 
@@ -864,10 +948,10 @@ library Math {
 
 // File: @openzeppelin/contracts/utils/Strings.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (utils/Strings.sol)
 
 pragma solidity ^0.8.20;
+
 
 /**
  * @dev String operations.
@@ -958,7 +1042,6 @@ library Strings {
 
 // File: @openzeppelin/contracts/utils/Context.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (utils/Context.sol)
 
 pragma solidity ^0.8.20;
@@ -989,6 +1072,7 @@ abstract contract Context {
 // OpenZeppelin Contracts (last updated v5.0.0) (access/Ownable.sol)
 
 pragma solidity ^0.8.20;
+
 
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -1089,6 +1173,7 @@ abstract contract Ownable is Context {
 // OpenZeppelin Contracts (last updated v5.0.0) (utils/Pausable.sol)
 
 pragma solidity ^0.8.20;
+
 
 /**
  * @dev Contract module which allows children to implement an emergency stop
@@ -1236,6 +1321,7 @@ interface IERC721Receiver {
 
 // File: @openzeppelin/contracts/utils/introspection/IERC165.sol
 
+
 // OpenZeppelin Contracts (last updated v5.0.0) (utils/introspection/IERC165.sol)
 
 pragma solidity ^0.8.20;
@@ -1263,9 +1349,11 @@ interface IERC165 {
 
 // File: @openzeppelin/contracts/interfaces/IERC2981.sol
 
+
 // OpenZeppelin Contracts (last updated v5.0.0) (interfaces/IERC2981.sol)
 
 pragma solidity ^0.8.20;
+
 
 /**
  * @dev Interface for the NFT Royalty Standard.
@@ -1286,15 +1374,19 @@ interface IERC2981 is IERC165 {
 
 // File: @openzeppelin/contracts/interfaces/IERC165.sol
 
+
 // OpenZeppelin Contracts (last updated v5.0.0) (interfaces/IERC165.sol)
 
 pragma solidity ^0.8.20;
 
+
 // File: @openzeppelin/contracts/utils/introspection/ERC165.sol
+
 
 // OpenZeppelin Contracts (last updated v5.0.0) (utils/introspection/ERC165.sol)
 
 pragma solidity ^0.8.20;
+
 
 /**
  * @dev Implementation of the {IERC165} interface.
@@ -1319,9 +1411,11 @@ abstract contract ERC165 is IERC165 {
 
 // File: @openzeppelin/contracts/token/ERC721/IERC721.sol
 
+
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/IERC721.sol)
 
 pragma solidity ^0.8.20;
+
 
 /**
  * @dev Required interface of an ERC721 compliant contract.
@@ -1454,15 +1548,20 @@ interface IERC721 is IERC165 {
 
 // File: @openzeppelin/contracts/interfaces/IERC721.sol
 
+
 // OpenZeppelin Contracts (last updated v5.0.0) (interfaces/IERC721.sol)
 
 pragma solidity ^0.8.20;
 
+
 // File: @openzeppelin/contracts/interfaces/IERC4906.sol
+
 
 // OpenZeppelin Contracts (last updated v5.0.0) (interfaces/IERC4906.sol)
 
 pragma solidity ^0.8.20;
+
+
 
 /// @title EIP-721 Metadata Update Extension
 interface IERC4906 is IERC165, IERC721 {
@@ -1479,9 +1578,11 @@ interface IERC4906 is IERC165, IERC721 {
 
 // File: @openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol
 
+
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/extensions/IERC721Enumerable.sol)
 
 pragma solidity ^0.8.20;
+
 
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional enumeration extension
@@ -1507,9 +1608,11 @@ interface IERC721Enumerable is IERC721 {
 }
 // File: @openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol
 
+
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/extensions/IERC721Metadata.sol)
 
 pragma solidity ^0.8.20;
+
 
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional metadata extension
@@ -1534,9 +1637,17 @@ interface IERC721Metadata is IERC721 {
 
 // File: @openzeppelin/contracts/token/ERC721/ERC721.sol
 
+
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/ERC721.sol)
 
 pragma solidity ^0.8.20;
+
+
+
+
+
+
+
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
@@ -2011,9 +2122,12 @@ abstract contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Er
 
 // File: @openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol
 
+
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/extensions/ERC721Pausable.sol)
 
 pragma solidity ^0.8.20;
+
+
 
 /**
  * @dev ERC721 token with pausable token transfers, minting and burning.
@@ -2047,9 +2161,14 @@ abstract contract ERC721Pausable is ERC721, Pausable {
 
 // File: @openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol
 
+
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/extensions/ERC721URIStorage.sol)
 
 pragma solidity ^0.8.20;
+
+
+
+
 
 /**
  * @dev ERC721 token with storage based token URI management.
@@ -2105,9 +2224,12 @@ abstract contract ERC721URIStorage is IERC4906, ERC721 {
 
 // File: @openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol
 
+
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/extensions/ERC721Burnable.sol)
 
 pragma solidity ^0.8.20;
+
+
 
 /**
  * @title ERC721 Burnable Token
@@ -2130,9 +2252,13 @@ abstract contract ERC721Burnable is Context, ERC721 {
 
 // File: @openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol
 
+
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/extensions/ERC721Enumerable.sol)
 
 pragma solidity ^0.8.20;
+
+
+
 
 /**
  * @dev This implements an optional extension of {ERC721} defined in the EIP that adds enumerability
@@ -2300,7 +2426,17 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
 
 // File: contracts/PokPokNFT.sol
 
+
 pragma solidity 0.8.21;
+
+
+
+
+
+
+
+
+
 
 /**
  * @dev Implementation of the NFT Royalty Standard, a standardized way to retrieve royalty payment information.
@@ -2403,17 +2539,21 @@ contract PokPokNFT is
     ERC721URIStorage,
     ERC721Pausable,
     ERC2981,
-    Ownable
+    Ownable,
+    ReentrancyGuard
 {
     enum Phase { Phase1, Phase2, Open }
 
     uint256 public MAX_SUPPLY = 888;
     bytes32 public whitelistRootPhase1;
     bytes32 public whitelistRootPhase2;
-    string private baseTokenURI;                    // https://firebasestorage.googleapis.com/v0/b/pokpok-adb67.appspot.com/o/metadata%2F
+    string private baseTokenURI;                                    // https://firebasestorage.googleapis.com/v0/b/pokpok-adb67.appspot.com/o/metadata%2F
     uint256 public phase1TimeStamp;
     uint256 public phaseDuration = 30 minutes;
     uint96 public rotaltyPercentage = 500;
+
+    uint256 public currentTokenId;
+
     mapping(address => mapping(Phase => bool)) public alreadyClaimed;
 
     event Claimed(address indexed claimer, uint256 indexed tokenId);
@@ -2426,6 +2566,8 @@ contract PokPokNFT is
         bytes32 _rootPhase2,
         uint256 _phase1TimeStamp
     ) Ownable(msg.sender) ERC721(name, symbol) {
+        require(_phase1TimeStamp > block.timestamp, "Phase1 timestamp should be in the future");
+
         baseTokenURI = _baseTokenURI;
         whitelistRootPhase1 = _rootPhase1;
         whitelistRootPhase2 = _rootPhase2;
@@ -2442,18 +2584,24 @@ contract PokPokNFT is
         return super.tokenURI(tokenId);
     }
 
-    function premint(address _to, uint _amount) external onlyOwner {
+    function premint(address _to, uint _amount) external nonReentrant onlyOwner {
         require(_amount + totalSupply() <= 88, "Premint limit reached");    
+        require(_to != address(0), "Cannot mint to a zero address");
+        
         for(uint i = 0; i < _amount; i++) {
-            uint256 _tokenId = totalSupply();
+            uint256 _tokenId = currentTokenId;
             _mint(_to, _tokenId);
-            _setTokenRoyalty(_tokenId, _to, rotaltyPercentage);   
+            _setTokenRoyalty(_tokenId, _to, rotaltyPercentage);  
+            currentTokenId += 1; 
         }
     }
 
-    function mint(bytes32[] calldata proof) external whenNotPaused returns (uint256) { 
+    function mint(bytes32[] calldata proof) external nonReentrant whenNotPaused returns (uint256) { 
 
-        require(block.timestamp >= phase1TimeStamp, "Pre-Sale not started");
+        require(msg.sender.code.length == 0, "Contract caller not allowed");
+        require(msg.sender == tx.origin, "Contract caller not allowed");
+
+        require(block.timestamp > phase1TimeStamp, "Pre-Sale not started");
         bytes32 leaf =  keccak256(abi.encodePacked(msg.sender));
 
         Phase currentPhase = Phase.Open;
@@ -2481,14 +2629,15 @@ contract PokPokNFT is
             "User has already claimed a token"
         );
 
-        uint256 _tokenId = totalSupply();
+        uint256 _tokenId = currentTokenId;
         require(_tokenId < MAX_SUPPLY, "All tokens have been minted");
 
         alreadyClaimed[msg.sender][currentPhase] = true;
         
         _mint(msg.sender, _tokenId);
         _setTokenRoyalty(_tokenId, msg.sender, rotaltyPercentage);
-        
+        currentTokenId += 1;
+
         emit Claimed(msg.sender, _tokenId);
         return _tokenId;
     }
@@ -2567,4 +2716,3 @@ contract PokPokNFT is
     }
     
 }
-

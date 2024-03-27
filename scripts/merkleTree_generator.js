@@ -23,6 +23,7 @@ async function main() {
     console.log(`Adddress: ${address} Proof: ${proof}`);
   });
 }
+
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

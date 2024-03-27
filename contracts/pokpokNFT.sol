@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./ERC2981.sol";
 
 contract PokPokNFT is
@@ -15,7 +16,8 @@ contract PokPokNFT is
     ERC721URIStorage,
     ERC721Pausable,
     ERC2981,
-    Ownable
+    Ownable,
+    ReentrancyGuard
 {
     enum Phase { Phase1, Phase2, Open }
 
@@ -26,6 +28,9 @@ contract PokPokNFT is
     uint256 public phase1TimeStamp;
     uint256 public phaseDuration = 30 minutes;
     uint96 public rotaltyPercentage = 500;
+
+    uint256 public currentTokenId;
+
     mapping(address => mapping(Phase => bool)) public alreadyClaimed;
 
     event Claimed(address indexed claimer, uint256 indexed tokenId);
@@ -38,6 +43,8 @@ contract PokPokNFT is
         bytes32 _rootPhase2,
         uint256 _phase1TimeStamp
     ) Ownable(msg.sender) ERC721(name, symbol) {
+        require(_phase1TimeStamp > block.timestamp, "Phase1 timestamp should be in the future");
+
         baseTokenURI = _baseTokenURI;
         whitelistRootPhase1 = _rootPhase1;
         whitelistRootPhase2 = _rootPhase2;
@@ -54,18 +61,24 @@ contract PokPokNFT is
         return super.tokenURI(tokenId);
     }
 
-    function premint(address _to, uint _amount) external onlyOwner {
+    function premint(address _to, uint _amount) external nonReentrant onlyOwner {
         require(_amount + totalSupply() <= 88, "Premint limit reached");    
+        require(_to != address(0), "Cannot mint to a zero address");
+        
         for(uint i = 0; i < _amount; i++) {
-            uint256 _tokenId = totalSupply();
+            uint256 _tokenId = currentTokenId;
             _mint(_to, _tokenId);
-            _setTokenRoyalty(_tokenId, _to, rotaltyPercentage);   
+            _setTokenRoyalty(_tokenId, _to, rotaltyPercentage);  
+            currentTokenId += 1; 
         }
     }
 
-    function mint(bytes32[] calldata proof) external whenNotPaused returns (uint256) { 
+    function mint(bytes32[] calldata proof) external nonReentrant whenNotPaused returns (uint256) { 
 
-        require(block.timestamp >= phase1TimeStamp, "Pre-Sale not started");
+        require(msg.sender.code.length == 0, "Contract caller not allowed");
+        require(msg.sender == tx.origin, "Contract caller not allowed");
+
+        require(block.timestamp > phase1TimeStamp, "Pre-Sale not started");
         bytes32 leaf =  keccak256(abi.encodePacked(msg.sender));
 
         Phase currentPhase = Phase.Open;
@@ -93,14 +106,15 @@ contract PokPokNFT is
             "User has already claimed a token"
         );
 
-        uint256 _tokenId = totalSupply();
+        uint256 _tokenId = currentTokenId;
         require(_tokenId < MAX_SUPPLY, "All tokens have been minted");
 
         alreadyClaimed[msg.sender][currentPhase] = true;
         
         _mint(msg.sender, _tokenId);
         _setTokenRoyalty(_tokenId, msg.sender, rotaltyPercentage);
-        
+        currentTokenId += 1;
+
         emit Claimed(msg.sender, _tokenId);
         return _tokenId;
     }
