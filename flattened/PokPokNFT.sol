@@ -2567,6 +2567,7 @@ contract PokPokNFT is
         uint256 _phase1TimeStamp
     ) Ownable(msg.sender) ERC721(name, symbol) {
         require(_phase1TimeStamp > block.timestamp, "Phase1 timestamp should be in the future");
+        require(_rootPhase1 != bytes32(0x0) && _rootPhase2 != bytes32(0x0), "Cannot set null for whitelist Root Phase1 and Phase 2");
 
         baseTokenURI = _baseTokenURI;
         whitelistRootPhase1 = _rootPhase1;
@@ -2585,6 +2586,7 @@ contract PokPokNFT is
     }
 
     function premint(address _to, uint _amount) external nonReentrant onlyOwner {
+        require(_amount > 0, "Invalid amount");
         require(_amount + totalSupply() <= 88, "Premint limit reached");    
         require(_to != address(0), "Cannot mint to a zero address");
         
@@ -2648,6 +2650,7 @@ contract PokPokNFT is
     }
 
     function updatePhaseDuration(uint256 _newPhaseDuration) external onlyOwner {
+        require(_newPhaseDuration >= 1800, "Minimum duration is 30 mins");
         phaseDuration = _newPhaseDuration;
     }
 
@@ -2656,6 +2659,8 @@ contract PokPokNFT is
     }
 
     function setWhitelistRoot(bytes32 _rootPhase1, bytes32 _rootPhase2) external onlyOwner {
+        require(_rootPhase1 != bytes32(0x0) && _rootPhase2 != bytes32(0x0), "Cannot set null for whitelist Root Phase1 and Phase 2");
+        
         whitelistRootPhase1 = _rootPhase1;
         whitelistRootPhase2 = _rootPhase2;
     }
