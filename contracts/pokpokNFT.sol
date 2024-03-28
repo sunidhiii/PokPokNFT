@@ -8,7 +8,103 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "./ERC2981.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/interfaces/IERC2981.sol";
+
+/**
+ * @dev Implementation of the NFT Royalty Standard, a standardized way to retrieve royalty payment information.
+ *
+ * Royalty information can be specified globally for all token ids via {_setDefaultRoyalty}, and/or individually for
+ * specific token ids via {_setTokenRoyalty}. The latter takes precedence over the first.
+ *
+ * Royalty is specified as a fraction of sale price. {_feeDenominator} is overridable but defaults to 10000, meaning the
+ * fee is specified in basis points by default.
+ *
+ * IMPORTANT: ERC-2981 only specifies a way to signal royalty information and does not enforce its payment. See
+ * https://eips.ethereum.org/EIPS/eip-2981#optional-royalty-payments[Rationale] in the EIP. Marketplaces are expected to
+ * voluntarily pay royalties together with sales, but note that this standard is not yet widely supported.
+ *
+ * _Available since v4.5._
+ */
+abstract contract ERC2981 is IERC2981, ERC165 {
+    struct RoyaltyInfo {
+        address receiver;
+        uint96 royaltyFraction;
+    }
+
+    mapping(uint256 => RoyaltyInfo) private _tokenRoyaltyInfo;
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(IERC165, ERC165)
+        returns (bool)
+    {
+        return
+            interfaceId == type(IERC2981).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * @inheritdoc IERC2981
+     */
+    function royaltyInfo(uint256 _tokenId, uint256 _salePrice)
+        public
+        view
+        virtual
+        override
+        returns (address, uint256)
+    {
+        RoyaltyInfo memory royalty = _tokenRoyaltyInfo[_tokenId];
+
+        uint256 royaltyAmount = (_salePrice * royalty.royaltyFraction) /
+            _feeDenominator();
+
+        return (royalty.receiver, royaltyAmount);
+    }
+
+    /**
+     * @dev The denominator with which to interpret the fee set in {_setTokenRoyalty} and {_setDefaultRoyalty} as a
+     * fraction of the sale price. Defaults to 10000 so fees are expressed in basis points, but may be customized by an
+     * override.
+     */
+    function _feeDenominator() internal pure virtual returns (uint96) {
+        return 10000;
+    }
+
+    /**
+     * @dev Sets the royalty information for a specific token id, overriding the global default.
+     *
+     * Requirements:
+     *
+     * - `receiver` cannot be the zero address.
+     * - `feeNumerator` cannot be greater than the fee denominator.
+     */
+    function _setTokenRoyalty(
+        uint256 tokenId,
+        address receiver,
+        uint96 feeNumerator
+    ) internal virtual {
+        require(
+            feeNumerator <= _feeDenominator(),
+            "ERC2981: royalty fee will exceed salePrice"
+        );
+        require(receiver != address(0), "ERC2981: Invalid parameters");
+
+        _tokenRoyaltyInfo[tokenId] = RoyaltyInfo(receiver, feeNumerator);
+    }
+
+    /**
+     * @dev Resets royalty information for the token id back to the global default.
+     */
+    function _resetTokenRoyalty(uint256 tokenId) internal virtual {
+        delete _tokenRoyaltyInfo[tokenId];
+    }
+}
 
 contract PokPokNFT is
     ERC721Enumerable,
@@ -24,11 +120,12 @@ contract PokPokNFT is
     uint256 public MAX_SUPPLY = 888;
     bytes32 public whitelistRootPhase1;
     bytes32 public whitelistRootPhase2;
+    string private uriBeforeReveal;                                 // https://firebasestorage.googleapis.com/v0/b/pokpok-adb67.appspot.com/o/reveal%2Fmetadata.json?alt=media
     string private baseTokenURI;                                    // https://firebasestorage.googleapis.com/v0/b/pokpok-adb67.appspot.com/o/metadata%2F
     uint256 public phase1TimeStamp;
-    uint256 public phaseDuration = 30 minutes;
+    uint256 public phaseDuration = 15 minutes;
     uint96 public rotaltyPercentage = 500;
-
+    bool public revealed = false;
     uint256 public currentTokenId;
 
     mapping(address => mapping(Phase => bool)) public alreadyClaimed;
@@ -38,7 +135,7 @@ contract PokPokNFT is
     constructor(
         string memory name,
         string memory symbol,
-        string memory _baseTokenURI,
+        string memory _uriBeforeReveal,    
         bytes32 _rootPhase1,
         bytes32 _rootPhase2,
         uint256 _phase1TimeStamp
@@ -46,7 +143,7 @@ contract PokPokNFT is
         require(_phase1TimeStamp > block.timestamp, "Phase1 timestamp should be in the future");
         require(_rootPhase1 != bytes32(0x0) && _rootPhase2 != bytes32(0x0), "Cannot set null for whitelist Root Phase1 and Phase 2");
 
-        baseTokenURI = _baseTokenURI;
+        uriBeforeReveal = _uriBeforeReveal;
         whitelistRootPhase1 = _rootPhase1;
         whitelistRootPhase2 = _rootPhase2;
         phase1TimeStamp = _phase1TimeStamp;
@@ -59,12 +156,17 @@ contract PokPokNFT is
     function tokenURI(
         uint256 tokenId
     ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+        
+        if(!revealed) {
+            return uriBeforeReveal;
+        }
+
         return super.tokenURI(tokenId);
     }
 
     function premint(address _to, uint _amount) external nonReentrant onlyOwner {
         require(_amount > 0, "Invalid amount");
-        require(_amount + totalSupply() <= 88, "Premint limit reached");    
+        require(_amount + currentTokenId <= 88, "Premint limit reached");    
         require(_to != address(0), "Cannot mint to a zero address");
         
         for(uint i = 0; i < _amount; i++) {
@@ -121,13 +223,18 @@ contract PokPokNFT is
         return _tokenId;
     }
 
+    function reveal(string memory _baseTokenURI) external onlyOwner {
+        revealed = true;
+        baseTokenURI = _baseTokenURI;
+    }
+
     function updatePhase1(uint256 _newPhase1TimeStamp) external onlyOwner {
         require(_newPhase1TimeStamp > block.timestamp, "New phase1 timestamp should be in the future");
         phase1TimeStamp = _newPhase1TimeStamp;
     }
 
     function updatePhaseDuration(uint256 _newPhaseDuration) external onlyOwner {
-        require(_newPhaseDuration >= 1800, "Minimum duration is 30 mins");
+        require(_newPhaseDuration >= 900, "Minimum duration is 15 mins");
         phaseDuration = _newPhaseDuration;
     }
 
@@ -140,6 +247,10 @@ contract PokPokNFT is
         
         whitelistRootPhase1 = _rootPhase1;
         whitelistRootPhase2 = _rootPhase2;
+    }
+
+    function setURIBeforeReveal(string memory _uriBeforeReveal) external onlyOwner {
+        uriBeforeReveal = _uriBeforeReveal;
     }
 
     function setBaseURI(string memory _baseTokenURI) external onlyOwner {
@@ -198,4 +309,6 @@ contract PokPokNFT is
     }
     
 }
+
+
 

@@ -2547,11 +2547,12 @@ contract PokPokNFT is
     uint256 public MAX_SUPPLY = 888;
     bytes32 public whitelistRootPhase1;
     bytes32 public whitelistRootPhase2;
+    string private uriBeforeReveal;                                 // https://firebasestorage.googleapis.com/v0/b/pokpok-adb67.appspot.com/o/reveal%2Fmetadata.json?alt=media
     string private baseTokenURI;                                    // https://firebasestorage.googleapis.com/v0/b/pokpok-adb67.appspot.com/o/metadata%2F
     uint256 public phase1TimeStamp;
-    uint256 public phaseDuration = 30 minutes;
+    uint256 public phaseDuration = 15 minutes;
     uint96 public rotaltyPercentage = 500;
-
+    bool public revealed = false;
     uint256 public currentTokenId;
 
     mapping(address => mapping(Phase => bool)) public alreadyClaimed;
@@ -2561,7 +2562,7 @@ contract PokPokNFT is
     constructor(
         string memory name,
         string memory symbol,
-        string memory _baseTokenURI,
+        string memory _uriBeforeReveal,    
         bytes32 _rootPhase1,
         bytes32 _rootPhase2,
         uint256 _phase1TimeStamp
@@ -2569,7 +2570,7 @@ contract PokPokNFT is
         require(_phase1TimeStamp > block.timestamp, "Phase1 timestamp should be in the future");
         require(_rootPhase1 != bytes32(0x0) && _rootPhase2 != bytes32(0x0), "Cannot set null for whitelist Root Phase1 and Phase 2");
 
-        baseTokenURI = _baseTokenURI;
+        uriBeforeReveal = _uriBeforeReveal;
         whitelistRootPhase1 = _rootPhase1;
         whitelistRootPhase2 = _rootPhase2;
         phase1TimeStamp = _phase1TimeStamp;
@@ -2582,12 +2583,17 @@ contract PokPokNFT is
     function tokenURI(
         uint256 tokenId
     ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+        
+        if(!revealed) {
+            return uriBeforeReveal;
+        }
+
         return super.tokenURI(tokenId);
     }
 
     function premint(address _to, uint _amount) external nonReentrant onlyOwner {
         require(_amount > 0, "Invalid amount");
-        require(_amount + totalSupply() <= 88, "Premint limit reached");    
+        require(_amount + currentTokenId <= 88, "Premint limit reached");    
         require(_to != address(0), "Cannot mint to a zero address");
         
         for(uint i = 0; i < _amount; i++) {
@@ -2644,13 +2650,18 @@ contract PokPokNFT is
         return _tokenId;
     }
 
+    function reveal(string memory _baseTokenURI) external onlyOwner {
+        revealed = true;
+        baseTokenURI = _baseTokenURI;
+    }
+
     function updatePhase1(uint256 _newPhase1TimeStamp) external onlyOwner {
         require(_newPhase1TimeStamp > block.timestamp, "New phase1 timestamp should be in the future");
         phase1TimeStamp = _newPhase1TimeStamp;
     }
 
     function updatePhaseDuration(uint256 _newPhaseDuration) external onlyOwner {
-        require(_newPhaseDuration >= 1800, "Minimum duration is 30 mins");
+        require(_newPhaseDuration >= 900, "Minimum duration is 15 mins");
         phaseDuration = _newPhaseDuration;
     }
 
@@ -2663,6 +2674,10 @@ contract PokPokNFT is
         
         whitelistRootPhase1 = _rootPhase1;
         whitelistRootPhase2 = _rootPhase2;
+    }
+
+    function setURIBeforeReveal(string memory _uriBeforeReveal) external onlyOwner {
+        uriBeforeReveal = _uriBeforeReveal;
     }
 
     function setBaseURI(string memory _baseTokenURI) external onlyOwner {
