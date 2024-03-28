@@ -121,7 +121,7 @@ contract PokPokNFT is
     bytes32 public whitelistRootPhase1;
     bytes32 public whitelistRootPhase2;
     string private uriBeforeReveal;                                 // https://firebasestorage.googleapis.com/v0/b/pokpok-adb67.appspot.com/o/reveal%2Fmetadata.json?alt=media
-    string private baseTokenURI;                                    // https://firebasestorage.googleapis.com/v0/b/pokpok-adb67.appspot.com/o/metadata%2F
+    string private baseTokenURI;                                    
     uint256 public phase1TimeStamp;
     uint256 public phaseDuration = 15 minutes;
     uint96 public rotaltyPercentage = 500;
@@ -141,7 +141,7 @@ contract PokPokNFT is
         uint256 _phase1TimeStamp
     ) Ownable(msg.sender) ERC721(name, symbol) {
         require(_phase1TimeStamp > block.timestamp, "Phase1 timestamp should be in the future");
-        require(_rootPhase1 != bytes32(0x0) && _rootPhase2 != bytes32(0x0), "Cannot set null for whitelist Root Phase1 and Phase 2");
+        require(_rootPhase1 != bytes32(0x0) && _rootPhase2 != bytes32(0x0), "Cannot set null for whitelist Root Phase1 and Phase2");
 
         uriBeforeReveal = _uriBeforeReveal;
         whitelistRootPhase1 = _rootPhase1;
@@ -191,7 +191,7 @@ contract PokPokNFT is
             currentPhase = Phase.Phase1;
             require(
                 MerkleProof.verify(proof, whitelistRootPhase1, leaf),
-                "Invalid proof or Phase1 expired"
+                "Invalid proof for Phase1!"
             );
         } 
         if (
@@ -201,7 +201,7 @@ contract PokPokNFT is
             currentPhase = Phase.Phase2;
             require(
                MerkleProof.verify(proof, whitelistRootPhase2, leaf),
-                "Invalid proof or Phase2 expired"
+                "Invalid proof for Phase2!"
             );
         } 
 
