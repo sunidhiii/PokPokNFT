@@ -9,7 +9,7 @@ async function main() {
     "0x2909E4b72fEb296e05Bd683319Fe1339ad247b4A",
     "0x4f6a46B0587EEaa225D9be1c2783B1B95B6F58a4",
   ];
-  const whitelist2 = [
+  const whitelist2 =  [
     "0x676DAD03011593CCB9eD596e44E60eeDBa39E60a",
     "0xb4737c03B64e044a5F3e84B9795C9c2Ec88CbEC8",
     "0x7c856949DE8B7cc2ac9B43FF5DD9b70af3e24B86",
@@ -22,11 +22,11 @@ async function main() {
     "0x06e1B2E23Fb8621503F408528162F1c077D1977b",
   ];
 
-  const leaves = whitelist1.map((addr) => keccak256(addr));
+  const leaves = whitelist2.map((addr) => keccak256(addr));
   const merkleTree = new MerkleTree(leaves, keccak256, { sortPairs: true });
   const rootHash = merkleTree.getRoot().toString("hex");
   console.log(`Whitelist Merkle Root: 0x${rootHash}`);
-  whitelist1.forEach((address) => {
+  whitelist2.forEach((address) => {
     const proof = merkleTree.getHexProof(keccak256(address));
     console.log(`Adddress: ${address} Proof: ${proof}`);
   });

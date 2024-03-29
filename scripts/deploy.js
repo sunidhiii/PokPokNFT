@@ -22,19 +22,18 @@ async function main() {
     `contract deployment address`, contract.address
   );
 
-
   const Contractdata = {
     address: contract.address,
     abi: JSON.parse(contract.interface.format('json'))
   }
 
-  fs.writeFileSync('./contract.json', JSON.stringify(Contractdata))
+  // fs.writeFileSync('./contract.json', JSON.stringify(Contractdata))
 
   // Verify the smart contract using hardhat 
-  // await hre.run("verify:verify", {
-  //   address: '0x57CbD9933BF1031ED6aCbFa9c5B6ed60C8B896C2',
-  //   constructorArguments: [name,symbol,BaseURI,hash1,hash2,time]
-  // });
+  await hre.run("verify:verify", {
+    address: '0x57CbD9933BF1031ED6aCbFa9c5B6ed60C8B896C2',
+    constructorArguments: [name,symbol,BaseURI,hash1,hash2,time]
+  });
 
 }
 

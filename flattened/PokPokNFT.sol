@@ -952,7 +952,6 @@ library Math {
 
 pragma solidity ^0.8.20;
 
-
 /**
  * @dev String operations.
  */
@@ -1068,11 +1067,9 @@ abstract contract Context {
 
 // File: @openzeppelin/contracts/access/Ownable.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (access/Ownable.sol)
 
 pragma solidity ^0.8.20;
-
 
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -1169,11 +1166,9 @@ abstract contract Ownable is Context {
 }
 // File: @openzeppelin/contracts/utils/Pausable.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (utils/Pausable.sol)
 
 pragma solidity ^0.8.20;
-
 
 /**
  * @dev Contract module which allows children to implement an emergency stop
@@ -1290,7 +1285,6 @@ abstract contract Pausable is Context {
 
 // File: @openzeppelin/contracts/token/ERC721/IERC721Receiver.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/IERC721Receiver.sol)
 
 pragma solidity ^0.8.20;
@@ -1321,7 +1315,6 @@ interface IERC721Receiver {
 
 // File: @openzeppelin/contracts/utils/introspection/IERC165.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (utils/introspection/IERC165.sol)
 
 pragma solidity ^0.8.20;
@@ -1349,11 +1342,9 @@ interface IERC165 {
 
 // File: @openzeppelin/contracts/interfaces/IERC2981.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (interfaces/IERC2981.sol)
 
 pragma solidity ^0.8.20;
-
 
 /**
  * @dev Interface for the NFT Royalty Standard.
@@ -1374,19 +1365,15 @@ interface IERC2981 is IERC165 {
 
 // File: @openzeppelin/contracts/interfaces/IERC165.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (interfaces/IERC165.sol)
 
 pragma solidity ^0.8.20;
 
-
 // File: @openzeppelin/contracts/utils/introspection/ERC165.sol
-
 
 // OpenZeppelin Contracts (last updated v5.0.0) (utils/introspection/ERC165.sol)
 
 pragma solidity ^0.8.20;
-
 
 /**
  * @dev Implementation of the {IERC165} interface.
@@ -1411,11 +1398,9 @@ abstract contract ERC165 is IERC165 {
 
 // File: @openzeppelin/contracts/token/ERC721/IERC721.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/IERC721.sol)
 
 pragma solidity ^0.8.20;
-
 
 /**
  * @dev Required interface of an ERC721 compliant contract.
@@ -1548,20 +1533,15 @@ interface IERC721 is IERC165 {
 
 // File: @openzeppelin/contracts/interfaces/IERC721.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (interfaces/IERC721.sol)
 
 pragma solidity ^0.8.20;
 
-
 // File: @openzeppelin/contracts/interfaces/IERC4906.sol
-
 
 // OpenZeppelin Contracts (last updated v5.0.0) (interfaces/IERC4906.sol)
 
 pragma solidity ^0.8.20;
-
-
 
 /// @title EIP-721 Metadata Update Extension
 interface IERC4906 is IERC165, IERC721 {
@@ -1578,11 +1558,9 @@ interface IERC4906 is IERC165, IERC721 {
 
 // File: @openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/extensions/IERC721Enumerable.sol)
 
 pragma solidity ^0.8.20;
-
 
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional enumeration extension
@@ -1613,7 +1591,6 @@ interface IERC721Enumerable is IERC721 {
 
 pragma solidity ^0.8.20;
 
-
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional metadata extension
  * @dev See https://eips.ethereum.org/EIPS/eip-721
@@ -1637,17 +1614,9 @@ interface IERC721Metadata is IERC721 {
 
 // File: @openzeppelin/contracts/token/ERC721/ERC721.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/ERC721.sol)
 
 pragma solidity ^0.8.20;
-
-
-
-
-
-
-
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
@@ -2122,12 +2091,9 @@ abstract contract ERC721 is Context, ERC165, IERC721, IERC721Metadata, IERC721Er
 
 // File: @openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/extensions/ERC721Pausable.sol)
 
 pragma solidity ^0.8.20;
-
-
 
 /**
  * @dev ERC721 token with pausable token transfers, minting and burning.
@@ -2161,14 +2127,9 @@ abstract contract ERC721Pausable is ERC721, Pausable {
 
 // File: @openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/extensions/ERC721URIStorage.sol)
 
 pragma solidity ^0.8.20;
-
-
-
-
 
 /**
  * @dev ERC721 token with storage based token URI management.
@@ -2205,7 +2166,7 @@ abstract contract ERC721URIStorage is IERC4906, ERC721 {
         }
         // If both are set, concatenate the baseURI and tokenURI (via string.concat).
         if (bytes(_tokenURI).length > 0) {
-            return string.concat(base, _tokenURI, ".json?alt=media");
+            return string.concat(base, _tokenURI);
         }
 
         return super.tokenURI(tokenId);
@@ -2224,12 +2185,9 @@ abstract contract ERC721URIStorage is IERC4906, ERC721 {
 
 // File: @openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/extensions/ERC721Burnable.sol)
 
 pragma solidity ^0.8.20;
-
-
 
 /**
  * @title ERC721 Burnable Token
@@ -2252,13 +2210,9 @@ abstract contract ERC721Burnable is Context, ERC721 {
 
 // File: @openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol
 
-
 // OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/extensions/ERC721Enumerable.sol)
 
 pragma solidity ^0.8.20;
-
-
-
 
 /**
  * @dev This implements an optional extension of {ERC721} defined in the EIP that adds enumerability
@@ -2426,17 +2380,7 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
 
 // File: contracts/PokPokNFT.sol
 
-
 pragma solidity 0.8.21;
-
-
-
-
-
-
-
-
-
 
 /**
  * @dev Implementation of the NFT Royalty Standard, a standardized way to retrieve royalty payment information.
@@ -2547,8 +2491,8 @@ contract PokPokNFT is
     uint256 public MAX_SUPPLY = 888;
     bytes32 public whitelistRootPhase1;
     bytes32 public whitelistRootPhase2;
-    string private uriBeforeReveal;                                 // https://firebasestorage.googleapis.com/v0/b/pokpok-adb67.appspot.com/o/reveal%2Fmetadata.json?alt=media
-    string private baseTokenURI;                                    // https://firebasestorage.googleapis.com/v0/b/pokpok-adb67.appspot.com/o/metadata%2F
+    string private uriBeforeReveal;                                 
+    string private baseTokenURI;                                    
     uint256 public phase1TimeStamp;
     uint256 public phaseDuration = 15 minutes;
     uint96 public rotaltyPercentage = 500;
@@ -2568,7 +2512,7 @@ contract PokPokNFT is
         uint256 _phase1TimeStamp
     ) Ownable(msg.sender) ERC721(name, symbol) {
         require(_phase1TimeStamp > block.timestamp, "Phase1 timestamp should be in the future");
-        require(_rootPhase1 != bytes32(0x0) && _rootPhase2 != bytes32(0x0), "Cannot set null for whitelist Root Phase1 and Phase 2");
+        require(_rootPhase1 != bytes32(0x0) && _rootPhase2 != bytes32(0x0), "Cannot set null for whitelist Root Phase1 and Phase2");
 
         uriBeforeReveal = _uriBeforeReveal;
         whitelistRootPhase1 = _rootPhase1;
@@ -2583,6 +2527,7 @@ contract PokPokNFT is
     function tokenURI(
         uint256 tokenId
     ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+        _requireOwned(tokenId);
         
         if(!revealed) {
             return uriBeforeReveal;
@@ -2618,7 +2563,7 @@ contract PokPokNFT is
             currentPhase = Phase.Phase1;
             require(
                 MerkleProof.verify(proof, whitelistRootPhase1, leaf),
-                "Invalid proof or Phase1 expired"
+                "Invalid proof for Phase1!"
             );
         } 
         if (
@@ -2628,7 +2573,7 @@ contract PokPokNFT is
             currentPhase = Phase.Phase2;
             require(
                MerkleProof.verify(proof, whitelistRootPhase2, leaf),
-                "Invalid proof or Phase2 expired"
+                "Invalid proof for Phase2!"
             );
         } 
 

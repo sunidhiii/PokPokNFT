@@ -120,7 +120,7 @@ contract PokPokNFT is
     uint256 public MAX_SUPPLY = 888;
     bytes32 public whitelistRootPhase1;
     bytes32 public whitelistRootPhase2;
-    string private uriBeforeReveal;                                 // https://firebasestorage.googleapis.com/v0/b/pokpok-adb67.appspot.com/o/reveal%2Fmetadata.json?alt=media
+    string private uriBeforeReveal;                                 
     string private baseTokenURI;                                    
     uint256 public phase1TimeStamp;
     uint256 public phaseDuration = 15 minutes;
@@ -156,6 +156,7 @@ contract PokPokNFT is
     function tokenURI(
         uint256 tokenId
     ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+        _requireOwned(tokenId);
         
         if(!revealed) {
             return uriBeforeReveal;
