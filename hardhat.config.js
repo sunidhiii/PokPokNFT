@@ -1,7 +1,7 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 
-const { DEPLOYER_PRIVATE_KEY } = process.env;
+const { DEPLOYER_PRIVATE_KEY, BASE_API_KEY } = process.env;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -20,7 +20,7 @@ module.exports = {
   },
   etherscan: {
     apiKey: {
-      base: "C3FHT2DZTU1TCKCU4CZEHFAFWQGSZ4GGA5",
+      base: BASE_API_KEY,
     },
     customChains: [
       {
