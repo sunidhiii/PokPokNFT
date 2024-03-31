@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./Common/ERC2981.sol";
 
-contract PokPokNFT is
+contract TestNFT is
     ERC721Enumerable,
     ERC721Burnable,
     ERC721URIStorage,
@@ -31,8 +31,6 @@ contract PokPokNFT is
     uint96 public rotaltyPercentage = 500;
     bool public revealed = false;
     uint256 public currentTokenId;
-
-    mapping(address => mapping(Phase => bool)) public alreadyClaimed;
 
     event Claimed(address indexed claimer, uint256 indexed tokenId);
 
@@ -69,56 +67,13 @@ contract PokPokNFT is
         return super.tokenURI(tokenId);
     }
 
-    function premint(address _to, uint _amount) external nonReentrant onlyOwner {
-        require(_amount > 0, "Invalid amount");
-        require(_amount + currentTokenId <= 88, "Premint limit reached");    
-        require(_to != address(0), "Cannot mint to a zero address");
-        
-        for(uint i = 0; i < _amount; i++) {
-            uint256 _tokenId = currentTokenId;
-            _mint(_to, _tokenId);
-            _setTokenRoyalty(_tokenId, _to, rotaltyPercentage);  
-            currentTokenId += 1; 
-        }
-    }
-
-    function mint(bytes32[] calldata proof) external nonReentrant whenNotPaused returns (uint256) { 
+    function mint() external nonReentrant whenNotPaused returns (uint256) { 
 
         require(msg.sender.code.length == 0, "Contract caller not allowed");
         require(msg.sender == tx.origin, "Contract caller not allowed");
 
-        require(block.timestamp > phase1TimeStamp, "Pre-Sale not started");
-        bytes32 leaf =  keccak256(abi.encodePacked(msg.sender));
-
-        Phase currentPhase = Phase.Open;
-        
-        if (block.timestamp > phase1TimeStamp && block.timestamp <= phase1TimeStamp + phaseDuration) {
-            currentPhase = Phase.Phase1;
-            require(
-                MerkleProof.verify(proof, whitelistRootPhase1, leaf),
-                "Invalid proof for Phase1!"
-            );
-        } 
-        if (
-            block.timestamp > phase1TimeStamp + phaseDuration &&
-            block.timestamp <= phase1TimeStamp + phaseDuration * 2
-        ) {
-            currentPhase = Phase.Phase2;
-            require(
-               MerkleProof.verify(proof, whitelistRootPhase2, leaf),
-                "Invalid proof for Phase2!"
-            );
-        } 
-
-        require(
-            !alreadyClaimed[msg.sender][currentPhase],
-            "User has already claimed a token"
-        );
-
         uint256 _tokenId = currentTokenId;
         require(_tokenId < MAX_SUPPLY, "All tokens have been minted");
-
-        alreadyClaimed[msg.sender][currentPhase] = true;
         
         _mint(msg.sender, _tokenId);
         _setTokenRoyalty(_tokenId, msg.sender, rotaltyPercentage);
@@ -133,25 +88,8 @@ contract PokPokNFT is
         baseTokenURI = _baseTokenURI;
     }
 
-    function updatePhase1(uint256 _newPhase1TimeStamp) external onlyOwner {
-        require(_newPhase1TimeStamp > block.timestamp, "New phase1 timestamp should be in the future");
-        phase1TimeStamp = _newPhase1TimeStamp;
-    }
-
-    function updatePhaseDuration(uint256 _newPhaseDuration) external onlyOwner {
-        require(_newPhaseDuration >= 900, "Minimum duration is 15 mins");
-        phaseDuration = _newPhaseDuration;
-    }
-
     function setRotaltyPercentage(uint96 _newRoyaltyPercent) external onlyOwner {
         rotaltyPercentage = _newRoyaltyPercent;
-    }
-
-    function setWhitelistRoot(bytes32 _rootPhase1, bytes32 _rootPhase2) external onlyOwner {
-        require(_rootPhase1 != bytes32(0x0) && _rootPhase2 != bytes32(0x0), "Cannot set null for whitelist Root Phase1 and Phase2");
-        
-        whitelistRootPhase1 = _rootPhase1;
-        whitelistRootPhase2 = _rootPhase2;
     }
 
     function setURIBeforeReveal(string memory _uriBeforeReveal) external onlyOwner {
